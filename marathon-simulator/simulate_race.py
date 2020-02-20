@@ -38,7 +38,7 @@ def process_gpx_file(gpx_path):
 def find_row(df, cum_dist):
     df_copy = df.copy()
     df_copy['prev_dist']=df_copy['distance'].shift(1)
-    if cum_dist>0:
+    if cum_dist>0 and len(df.loc[(df_copy.prev_dist<cum_dist) & (df_copy.distance>=cum_dist)])>0:
         row = df.loc[(df_copy.prev_dist<cum_dist) & (df_copy.distance>=cum_dist)].iloc[0]
     elif cum_dist>df.iloc[-1]['distance']:
         row = df_copy.iloc[-1]
