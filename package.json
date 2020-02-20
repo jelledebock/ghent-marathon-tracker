@@ -11,7 +11,10 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "mqtt": "^3.0.0"
+    "gpx-parse": "^0.10.4",
+    "haversine": "^1.1.1",
+    "mqtt": "^3.0.0",
+    "parse-gpx": "^1.2.0"
   },
   "engines": {
     "node": "13.x"

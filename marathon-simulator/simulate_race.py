@@ -41,9 +41,9 @@ def find_row(df, cum_dist):
     if cum_dist>0:
         row = df.loc[(df_copy.prev_dist<cum_dist) & (df_copy.distance>=cum_dist)].iloc[0]
     elif cum_dist>df.iloc[-1]['distance']:
-        row = df.iloc[-1]
+        row = df_copy.iloc[-1]
     else:
-        row = df.iloc[0]
+        row = df_copy.iloc[0]
     return row
 
 def randrange_float(start, stop, step):
