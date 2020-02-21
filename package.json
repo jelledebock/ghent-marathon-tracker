@@ -11,10 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "firebase": "^7.9.0",
     "gpx-parse": "^0.10.4",
     "haversine": "^1.1.1",
     "mqtt": "^3.0.0",
-    "parse-gpx": "^1.2.0"
+    "parse-gpx": "^1.2.0",
+    "passport": "^0.4.1"
   },
   "engines": {
     "node": "13.x"
