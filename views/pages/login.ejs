@@ -1,0 +1,31 @@
+<!-- views/pages/index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); -%>
+</head>
+<body class="container">
+
+<header>
+    <%- include('../partials/header'); -%>
+</header>
+
+<main>
+    <div class="jumbotron">
+        <div class="login-form">
+			<h1>Login Form</h1>
+			<form action="login" method="POST">
+				<input type="text" name="username" placeholder="Username" required>
+				<input type="password" name="password" placeholder="Password" required>
+				<input type="submit" value='log in'>
+			</form>
+		</div>
+    </div>
+</main>
+
+<footer>
+    <%- include('../partials/footer'); -%>
+</footer>
+
+</body>
+</html>

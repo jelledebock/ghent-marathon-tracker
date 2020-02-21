@@ -1,0 +1,25 @@
+<!-- views/pages/index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); -%>
+</head>
+<body class="container">
+
+<header>
+    <%- include('../partials/header'); -%>
+</header>
+
+<main>
+    <div class='container'>
+        <h4>Parcours info:</h4>
+        <p><b>Length</b> <%-(parcours.total_distance/1000).toFixed(2) -%> km</p>
+    </div>		
+</main>
+
+<footer>
+    <%- include('../partials/footer'); -%>
+</footer>
+
+</body>
+</html>
