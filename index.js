@@ -61,9 +61,35 @@ app.get('/login', function(req, res){
   res.render('pages/login', { title: 'Log in as admin!' })
 });
 
+app.post('/upload_parcours', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async (req, res) => {
+   var parcours_url = req.body.parcours_url;
+   var parcours_desc = req.body.parcours_name;
+   gpx.download_gpx(parcours_url, parcours_desc).then(function(filename){
+    res.json({'filename': filename});
+   });
+   
+});
+
 app.get('/config', authController.checkIfAdmin, async (_, res) => {
-  return res.json(config);
+  var config_obj = {
+    "tracking_ids": config.tracker_ids,
+    "save_to_db": true,
+    "parcours_gpx": config.gpx_path
+  }
+  res.render('pages/config', {title: 'Edit configuration (ADMIN)', config: JSON.stringify(config_obj)});
 });  
+
+app.post('/config', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async (req, res) => {
+  var config_data = req.body.updated_obj;
+  config.tracker_ids = config_data.tracking_ids;
+  config.save_to_db = JSON.parse(config_data.save_to_db);
+  config.parcours_gpx = config_data.parcours_gpx;
+  console.log(config);
+  mqtt.disconnect();
+  mqtt.initialize();
+  gpx.intialize();
+  res.json(config_data);
+});
 
 app.get('/location', function (req, res) {
   res.json(mqtt.current_location);

@@ -1,0 +1,62 @@
+<!-- views/pages/index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <%- include('../partials/head'); -%>
+    <link rel="stylesheet" href="/css/jsoneditor.css">
+</head>
+<body class="container">
+
+<header>
+    <%- include('../partials/header'); -%>
+</header>
+
+<main>
+    <div class='container'>
+        <h4>Edit configuration</h4>
+        <div id='json-viewer' class="json-editor"></div>
+        <script>
+                $(function(){
+                    // create the editor
+                    var json_data = JSON.parse('<%- config %>');
+                    console.log(json_data);
+
+                    var opt = { 
+                        change: function(data) { 
+                            console.log(data); 
+                            json_data.save_to_db = JSON.parse(data.save_to_db);
+                            json_data.tracking_ids = data.tracking_ids;
+                            if(data.parcours_gpx.startsWith('http')){
+                                $.post("/upload_parcours", {'parcours_name': 'uploaded_parcours.gpx', 'parcours_url': data.parcours_gpx}, function( data ) {
+                                    console.log(data);
+                                    json_data.parcours_gpx = data.filename;
+                                    editor = $('#json-viewer').jsonEditor(json_data, opt);
+                                });
+                            }
+                        },
+                        propertyclick: function(path) { /* called when a property is clicked with the JS path to that property */ }
+                    };            
+                    var editor = $('#json-viewer').jsonEditor(json_data, opt);
+
+                    $('#update-config').click(function(){
+                        var json_config = json_data;
+                        $.post('/config', {'updated_obj': json_config}, function(data){
+                            json_data = data;
+                            editor = $('#json-viewer').jsonEditor(json_data, opt);
+                        })
+                    });
+                });
+
+            </script> 
+            <a class='btn btn-success' id="update-config">Update configuration</a>
+        </div>
+    </div>		
+</main>
+
+<footer>
+    <%- include('../partials/footer'); -%>
+</footer>
+<script src="/js/jsoneditor.min.js"></script>
+</body>
+</html>
