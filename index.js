@@ -1,9 +1,9 @@
 // in sublime
 var gpx = require('./lib/gpx');
-var mqtt = require('./lib/mqtt');
 var express = require('express');
 var config = require('./config');
 var authController = require('./controllers/auth-controller');
+var mqtt = require('./lib/mqtt');
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')();
 
@@ -91,6 +91,13 @@ app.post('/config', bodyParser.urlencoded({extended: true}), authController.chec
   res.json(config_data);
 });
 
+app.get('/delete_db_last_day', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async (req, res) => {
+  var total_deletes = await mqtt.delete_last_day();
+  var current_location = mqtt.current_location;
+  var parcours = gpx.parcours;
+  res.render('pages/home', { title: 'Ghent 1/2 marathon race center', location: current_location, parcours: parcours, 'message': "Successfully deleted "+total_deletes+" documents." });
+});
+
 app.get('/location', function (req, res) {
   res.json(mqtt.current_location);
 });
@@ -105,9 +112,15 @@ app.get('/', function (req, res) {
   res.render('pages/home', { title: 'Ghent 1/2 marathon race center', location: current_location, parcours: parcours });
 });
 
+app.get('/last_day', async function(req, res){
+  var data = await mqtt.get_last_day_data();
+  res.json(data);
+});
+
 app.listen(port, function () {
   console.log("App started listening on "+port+"!");
   mqtt.initialize();
   gpx.intialize();
+
 });
 

@@ -55,6 +55,7 @@ def broacast_mqtt_location(athlete, client, df, cum_dist, run_time, timestamp_no
     output['lat']=row_obj['lat']
     output['lon']=row_obj['lon']
     output['tst']=int(time.mktime(timestamp_now.timetuple()))
+    output['tid']=athlete
     print(output)
     client.publish(topic_name.format(athlete), json.dumps(output))
 
