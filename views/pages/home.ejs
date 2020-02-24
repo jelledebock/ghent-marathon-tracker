@@ -5,21 +5,22 @@
     <%- include('../partials/head'); -%>
 </head>
 <body class="container">
+    <header>
+        <%- include('../partials/header'); -%>
+    </header>
 
-<header>
-    <%- include('../partials/header'); -%>
-</header>
-
-<main>
-    <div class='container'>
-        <h4>Parcours info:</h4>
-        <p><b>Length</b> <%-(parcours.total_distance/1000).toFixed(2) -%> km</p>
-    </div>		
-</main>
-
-<footer>
-    <%- include('../partials/footer'); -%>
-</footer>
-
+    <main>
+        <div class='container'>
+            <div class='race-status-bar'>
+                <div class='col col-md-4'><h5>Race status</h5><span id='race-status' class='btn btn-warning'>Not live</span></div>
+                <div class='col col-md-4'><h5>Parcours info </h5><%-(parcours.total_distance/1000).toFixed(2) -%> km</div>
+            </div>
+        </div>		
+    </main>
+    <br>
+    <footer>
+        <%- include('../partials/footer'); -%>
+    </footer>
+    <script src='./js/race-center.js'></script>
 </body>
 </html>

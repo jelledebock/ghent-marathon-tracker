@@ -15,41 +15,45 @@
 <main>
     <div class='container'>
         <h4>Edit configuration</h4>
-        <div id='json-viewer' class="json-editor"></div>
-        <script>
-                $(function(){
+        <h5>Live status</h5>
+        <div id='live-status-json-viewer' class="json-editor"></div>
+        <a class='btn btn-success' id="update-config">Update live status</a>
+        <script> 
+                var config_data;
+
+                function update_var(data){
+                    config_data = data;
+                }
+
+                var opts = {
+                    change: update_var,
+                    propertyclick: function(path) { /* called when a property is clicked with the JS path to that property */ }
+                };
+                function init_json_config(){
                     // create the editor
-                    var json_data = JSON.parse('<%- config %>');
-                    console.log(json_data);
-
-                    var opt = { 
-                        change: function(data) { 
-                            console.log(data); 
-                            json_data.save_to_db = JSON.parse(data.save_to_db);
-                            json_data.tracking_ids = data.tracking_ids;
-                            if(data.parcours_gpx.startsWith('http')){
-                                $.post("/upload_parcours", {'parcours_name': 'uploaded_parcours.gpx', 'parcours_url': data.parcours_gpx}, function( data ) {
-                                    console.log(data);
-                                    json_data.parcours_gpx = data.filename;
-                                    editor = $('#json-viewer').jsonEditor(json_data, opt);
-                                });
-                            }
-                        },
-                        propertyclick: function(path) { /* called when a property is clicked with the JS path to that property */ }
-                    };            
-                    var editor = $('#json-viewer').jsonEditor(json_data, opt);
-
-                    $('#update-config').click(function(){
-                        var json_config = json_data;
-                        $.post('/config', {'updated_obj': json_config}, function(data){
-                            json_data = data;
-                            editor = $('#json-viewer').jsonEditor(json_data, opt);
-                        })
-                    });
+                    //Getting live status
+                    $.get('/race_status', function(data){
+                        console.log("Setting data");
+                        config_data=data;
+                        console.log(data);
+                        var editor = $('#live-status-json-viewer').jsonEditor(config_data, opts);
+                    });                             
+                };
+                
+                $('#update-config').click(function(){
+                        console.log("Clicked on config update");
+                        var live_status = config_data['is_live'];
+                        console.log("Updating live status to "+JSON.stringify(live_status));
+                        $.get('/update_status/'+JSON.stringify(live_status), function(data){
+                            editor = $('#live-status-json-viewer').jsonEditor(config_data, opts);
+                            console.log("Updated successfully!");
+                        });
                 });
 
+                $(document).ready(function(){
+                    init_json_config();
+                });
             </script> 
-            <a class='btn btn-success' id="update-config">Update configuration</a>
         </div>
     </div>		
 </main>

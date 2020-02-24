@@ -6,9 +6,12 @@ var authController = require('./controllers/auth-controller');
 var mqtt = require('./lib/mqtt');
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')();
+var race_center = require('./lib/race-analytics')
 
 var port = process.env.PORT || 3000;
 var app = express();
+var race_api = new race_center.FirebaseRaceCenter();
+
 var user;
 
 app.use(express.static('public'))
@@ -23,6 +26,18 @@ app.use(function(req, res, next) {
     _render.call(this, view, options, cb)
   }
   next()
+})
+
+app.get('/race_status', async function(req, res){
+  var status = await race_api.getPlatformStatus();
+  return res.json({'is_live': status['is_live']});
+});
+
+app.get('/update_status/:status', authController.checkIfAdmin, async function(req, res){
+  var status = JSON.parse(req.params.status);
+  console.log("Updating status to ",status);
+  var updated_obj = await race_api.setLiveStatus(status);
+  return res.json(updated_obj);
 })
 
 app.post('/login', bodyParser.urlencoded({extended: true}), function (req, res) {
@@ -46,7 +61,7 @@ app.get('/logout', authController.checkIfAuthenticated, function(req, res){
     user = null;
     var current_location = mqtt.current_location;
     var parcours = gpx.parcours;
-    res.render('pages/home', { title: 'Ghent 1/2 marathon race center', location: current_location, parcours: parcours });
+    res.render('pages/home', { title: 'Ghent half marathon race center', location: current_location, parcours: parcours });
   })
 });
 
@@ -58,7 +73,7 @@ app.get('/user', authController.checkIfAuthenticated, function(req, res){
 });
 
 app.get('/login', function(req, res){
-  res.render('pages/login', { title: 'Log in as admin!' })
+  res.render('pages/login', { title: 'Log in' })
 });
 
 app.post('/upload_parcours', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async (req, res) => {
@@ -95,7 +110,7 @@ app.get('/delete_db_last_day', bodyParser.urlencoded({extended: true}), authCont
   var total_deletes = await mqtt.delete_last_day();
   var current_location = mqtt.current_location;
   var parcours = gpx.parcours;
-  res.render('pages/home', { title: 'Ghent 1/2 marathon race center', location: current_location, parcours: parcours, 'message': "Successfully deleted "+total_deletes+" documents." });
+  res.render('pages/home', { title: 'Ghent half marathon race center', location: current_location, parcours: parcours, 'message': "Successfully deleted "+total_deletes+" documents." });
 });
 
 app.get('/location', function (req, res) {
@@ -109,7 +124,7 @@ app.get('/parcours', function (req, res) {
 app.get('/', function (req, res) {
   var current_location = mqtt.current_location;
   var parcours = gpx.parcours;
-  res.render('pages/home', { title: 'Ghent 1/2 marathon race center', location: current_location, parcours: parcours });
+  res.render('pages/home', { title: 'Ghent half marathon race center', location: current_location, parcours: parcours });
 });
 
 app.get('/last_day', async function(req, res){
