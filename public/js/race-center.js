@@ -1,4 +1,5 @@
 var is_live = false;
+var map;
 
 function get_live_status(){
     $.get('/race_status', function(data){
@@ -11,7 +12,23 @@ function get_live_status(){
     });
 }
 
+function init_map(){
+    map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([37.41, 8.82]),
+          zoom: 4
+        })
+      });
+};
+
 $(document).ready(function(){
     get_live_status();
     setInterval(get_live_status, 5000);
+    init_map();
 })

@@ -44,3 +44,13 @@ div.race-status-bar>div{
     margin-right: 4px;
     text-align: center;
 }
+
+div.race-status-bar{
+    display: block;
+    height: 80px;
+}
+
+.config{
+    padding: 0;
+    margin: 0;
+}
