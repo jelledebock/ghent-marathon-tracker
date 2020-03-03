@@ -113,8 +113,9 @@ if __name__ == "__main__":
         print("Run time of first runner: ", first_runner_run_time)
         print("Run distance of first runner: ", first_runner_cum_dist)
         # Broadcast location via MQTT 
-        broacast_mqtt_location('abdi', client, points_df, abdi_cum_distance, abdi_run_time, timestamp_now)
-        broacast_mqtt_location('first_runner', client, points_df, first_runner_cum_dist, first_runner_run_time, timestamp_now)
+        if curr_elapsed_time_s%10==0:
+            broacast_mqtt_location('abdi', client, points_df, abdi_cum_distance, abdi_run_time, timestamp_now)
+            broacast_mqtt_location('first_runner', client, points_df, first_runner_cum_dist, first_runner_run_time, timestamp_now)
         
         curr_elapsed_time_s+=1
         if curr_elapsed_time_s>time_gap_start_sec and abdi_cum_distance<=exact_distance:

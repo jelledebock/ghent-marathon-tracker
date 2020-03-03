@@ -7,6 +7,7 @@ var mqtt = require('./lib/mqtt');
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')();
 var race_center = require('./lib/race-analytics')
+var moment = require('moment');
 
 var port = process.env.PORT || 3000;
 var app = express();
@@ -29,8 +30,7 @@ app.use(function(req, res, next) {
 })
 
 app.get('/race_status', async function(req, res){
-  var status = await race_api.getPlatformStatus();
-  return res.json({'is_live': status['is_live']});
+  return res.json(race_api.race_status);
 });
 
 app.get('/update_status/:status', authController.checkIfAdmin, async function(req, res){
@@ -40,28 +40,21 @@ app.get('/update_status/:status', authController.checkIfAdmin, async function(re
   return res.json(updated_obj);
 })
 
-app.get('/last_info/:tracking_id/:seconds', async function(req, res){
+app.get('/last_info/:tracking_id', async function(req, res){
   var tracking_id = req.params.tracking_id;
-  var seconds = req.params.seconds;
-  console.log("Getting last "+seconds+" seconds stats of "+tracking_id);
-  var return_json = await race_api.get_data_of_last_seconds(tracking_id, seconds);
-  console.log("Getting index on the course");
-  var location = mqtt.get_location_on_course(tracking_id)
-  return_json['current_location']=location;
-  var location_gpx = gpx.find_in_course(location);
-  if(location_gpx){
-    return_json['location_in_gpx']={};
-    return_json['location_in_gpx']['point']=location_gpx[0];
-    return_json['location_in_gpx']['distance_done']=location_gpx[1];
-    return_json['location_in_gpx']['proximity']=location_gpx[2];
-    var prediction = await race_api.predict_finish_time(return_json['location_in_gpx']['distance_done'], return_json['speed_m_s'], gpx.parcours.total_distance);
-    return_json['prediction']=prediction;
-  }
-  if(!('athlete' in return_json)){
-    return_json['is_live']=false;
-  }
 
-  return res.json(return_json);
+  console.log("Getting stats of "+tracking_id);
+  if(tracking_id in race_api.current_status){
+    json_obj = race_api.current_status[tracking_id];
+    return res.json(json_obj);
+  }
+  else{
+    return {};
+  }
+});
+
+app.get('/tracking_ids', async function(req, res){
+  return res.json(race_api.race_status.tracking_ids);
 });
 
 app.post('/login', bodyParser.urlencoded({extended: true}), function (req, res) {
