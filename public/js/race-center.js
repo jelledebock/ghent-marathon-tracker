@@ -48,22 +48,21 @@ function get_location_stats(tracking_id){
       else{
         tracking_info[tracking_id]=data;
         if(tracking_id in tracking_markers){
-          tracking_markers[tracking_id].setGeometry(new ol.geom.Point([data['current_location'][1], data['current_location'][0]]));
+          console.log("Updating marker "+tracking_id);
+          tracking_markers[tracking_id].getFeatures()[0].getGeometry().setCoordinates(ol.proj.transform([data['current_location'][1], data['current_location'][0]], 'EPSG:4326', 'EPSG:3857'));
         }
         else{
-          tracking_markers[tracking_id] = new ol.layer.Vector({
-            source: new ol.source.Vector({
-                features: [
-                    new ol.Feature({
-                        geometry: new ol.geom.Point(ol.proj.fromLonLat([data['current_location'][1], data['current_location'][0]]))
-                    })
-                ]
-            })         
-          });
-          map.addLayer(tracking_markers[tracking_id]);
-          var interaction = set_popup(tracking_markers[tracking_id], tracking_id);
-          map.addInteraction(interaction);
+          tracking_markers[tracking_id] = new ol.source.Vector({features:[new ol.Feature({
+                        geometry: new ol.geom.Point(ol.proj.fromLonLat([data['current_location'][1], data['current_location'][0]])),
+                        name: 'Location of '+tracking_id,
+                        id: tracking_id
+          })]});
+          tracking_markers[tracking_id].getFeatures()[0].setStyle(get_icon(tracking_id));
+          tracking_markers[tracking_id].getFeatures()[0].getGeometry().setCoordinates(ol.proj.transform([data['current_location'][1], data['current_location'][0]], 'EPSG:4326', 'EPSG:3857'));        
         }
+
+        map.addLayer(new ol.layer.Vector({source: tracking_markers[tracking_id]}));
+
         resolve(tracking_info[tracking_id]);
       }
     });
@@ -71,34 +70,69 @@ function get_location_stats(tracking_id){
 }
   
 
-function set_popup(marker, tracking_id){
-  return new ol.interaction.Select(
-    marker, {
-      hover: true,
-      onBeforeSelect: function(feature) {
-         // add code to create tooltip/popup
-         popup = new ol.popup.FramedCloud(
-            "",
-            feature.geometry.getBounds().getCenterLonLat(),
-            new OpenLayers.Size(100,100),
-            "<div>"+tracking_id+"</div>",
-            null,
-            true,
-            null);
-  
-         feature.popup = popup;
-  
-         map.addPopup(popup);
-         // return false to disable selection and redraw
-         // or return true for default behaviour
-         return true;
-      },
-      onUnselect: function(feature) {
-         // remove tooltip
-         map.removePopup(feature.popup);
-         feature.popup.destroy();
-         feature.popup=null;
-      }
+function get_icon(tracking_id){
+  if(tracking_id=='abdi'){
+    _colour=' #FF0000';
+  }
+  else if(tracking_id=='first_runner'){
+    _colour=' #0000FF';
+  }
+  else{
+    _colour=' #008000';
+  }
+  var iconStyle = new ol.style.Style({
+    image: new ol.style.Icon({
+      colour: _colour,
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: 'data/runner.svg',
+      scale: 1.1
+    })
+  });
+  return iconStyle;
+}
+
+function add_popup(map){
+  var element = document.getElementById('popup');
+
+  var popup = new ol.Overlay({
+    element: element,
+    positioning: 'bottom-center',
+    stopEvent: false,
+    offset: [0, 0]
+  });
+  map.addOverlay(popup);
+
+  // display popup on click
+  map.on('click', function(evt) {
+    var feature = map.forEachFeatureAtPixel(evt.pixel,
+      function(feature) {
+        return feature;
+      });
+    if (feature) {
+      console.log("Showing popup");
+      console.log(element);
+      var coordinates = feature.getGeometry().getCoordinates();
+      popup.setPosition(coordinates);
+      $(element).popover({
+        placement: 'top',
+        html: true,
+        content: feature.get('name')
+      });
+      $(element).popover('show');
+    } else {
+      $(element).popover('destroy');
+    }
+  });
+
+  // change mouse cursor when over marker
+  map.on('pointermove', function(e) {
+    if (e.dragging) {
+      $(element).popover('destroy');
+      return;
+    }
+    var pixel = map.getEventPixel(e.originalEvent);
+    var hit = map.hasFeatureAtPixel(pixel);
   });
 }
 
@@ -147,6 +181,7 @@ function init_map(){
         map.getView().fit(extent, map.getSize());
     }
     });
+    add_popup(map);
 };
 
 $(document).ready(async function(){
