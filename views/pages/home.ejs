@@ -11,21 +11,22 @@
         <style>
           .map {
             margin-top: 10px;
-            height: 100vh;
+            height: 576px;
             width: 100%;
           }
         </style>
     </header>
-
     <main>
         <div class='container'>
-            <div class='race-status-bar'>
-                <div class='col col-md-2'><h5>Race status</h5><span id='race-status' class='btn btn-warning'>Not live</span></div>
-                <div class='col col-md-2'><h5>Parcours info </h5><%-(parcours.total_distance/1000).toFixed(2) -%> km</div>
+            <div class='row'>
+                <div class='col col-md-8'>
+                    <div id="map" class="map"></div>
+                    <div id="popup" class="popup"></div>
+                </div>
+                <div class='col col-md-4'>
+                    <div class='race-status-bar'></div>
+                </div>
             </div>
-            <br>
-            <div id="map" class="map"></div>
-            <div id="popup" class="popup"></div>
         </div>		
     </main>
     <br>

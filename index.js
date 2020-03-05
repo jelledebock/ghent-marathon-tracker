@@ -1,4 +1,3 @@
-// in sublime
 var gpx = require('./lib/gpx');
 var express = require('express');
 var config = require('./config');
@@ -52,6 +51,10 @@ app.get('/tracking_ids', async function(req, res){
   return res.json(race_api.race_status.tracking_ids);
 });
 
+app.get('/real_names', async function(req, res){
+  return res.json(race_api.race_status.real_names);
+})
+
 app.post('/login', bodyParser.urlencoded({extended: true}), function (req, res) {
   response = {
       username: req.body.username,
@@ -73,7 +76,7 @@ app.get('/logout', authController.checkIfAuthenticated, function(req, res){
     user = null;
     var current_location = mqtt.current_location;
     var parcours = gpx.parcours;
-    res.render('pages/home', { title: 'Ghent half marathon race center', location: current_location, parcours: parcours });
+    res.render('pages/home', { title: 'Halve marathon 2 Tokyo', location: current_location, parcours: parcours });
   })
 });
 
@@ -122,7 +125,7 @@ app.get('/delete_db_last_day', bodyParser.urlencoded({extended: true}), authCont
   var total_deletes = await mqtt.delete_last_day();
   var current_location = mqtt.current_location;
   var parcours = gpx.parcours;
-  res.render('pages/home', { title: 'Ghent half marathon race center', location: current_location, parcours: parcours, 'message': "Successfully deleted "+total_deletes+" documents." });
+  res.render('pages/home', { title: 'Halve marathon 2 Tokyo', location: current_location, parcours: parcours, 'message': "Successfully deleted "+total_deletes+" documents." });
 });
 
 app.get('/location', function (req, res) {
@@ -136,7 +139,7 @@ app.get('/parcours', function (req, res) {
 app.get('/', function (req, res) {
   var current_location = mqtt.current_location;
   var parcours = gpx.parcours;
-  res.render('pages/home', { title: 'Ghent half marathon race center', location: current_location, parcours: parcours });
+  res.render('pages/home', { title: 'Halve marathon 2 Tokyo', location: current_location, parcours: parcours });
 });
 
 app.get('/last_day', async function(req, res){

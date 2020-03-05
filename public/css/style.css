@@ -1,7 +1,10 @@
+    body{
+        font-family: 'Panno';
+        font-size: large;
+    }
     .login-form {
         width: 300px;
         margin: 0 auto;
-        font-family: Tahoma, Geneva, sans-serif;
     }
     .login-form h1 {
         text-align: center;
@@ -27,7 +30,22 @@
         font-weight: bold;
         color: #ffffff;
     }
+.container{
+    padding: 0;
+}
 
+.badge-success{
+    background-color: green;
+}
+
+.badge-warning{
+    background-color: orange;
+}
+
+.site-title{
+    text-transform: capitalize;
+    text-align: center;
+}
 footer{
     position: relative;
     bottom: 0;
@@ -37,17 +55,10 @@ footer{
 }
 
 div.race-status-bar>div{
-    height: 120px;
     padding: 4px;
-    background-color: rgba(78, 128, 128, 0.459);
     border-radius: 3px;
-    margin-right: 4px;
+    margin-bottom: 4px;
     text-align: center;
-}
-
-div.race-status-bar{
-    display: block;
-    height: 120px;
 }
 
 .config{
@@ -55,13 +66,6 @@ div.race-status-bar{
     margin: 0;
 }
 
-div.tracking-info-data{
-    float: left;
-    display: inline;
-    margin-right: 5px;
-    height: 20px;
-    width : 80px;
-}
 
 .athlete-name{
     font-size: medium;
@@ -73,4 +77,23 @@ div.athlete-data-row{
     margin: auto;
     width: 100%;
     height: 20px;
+}
+
+nav.navbar-idlab{
+    background-color: #1E64C8;
+}
+
+nav.navbar-idlab a{
+    color: white;
+    font-size: medium;
+}
+
+nav.navbar-idlab a:hover{
+    background-color: gray;
+}
+
+@font-face {
+    font-family: 'Panno';
+    src: url('../data/panno.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+     url('../data/panno.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
 }
