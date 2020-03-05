@@ -41,28 +41,35 @@ async function update_race_data(){
 function get_location_stats(tracking_id){
   return new Promise(function(resolve, reject){
     $.get('/last_info/'+tracking_id, function(data){
-      tracking_info[tracking_id]=data;
-      if(tracking_id in tracking_markers){
-        tracking_markers[tracking_id].setGeometry(new ol.geom.Point([data['current_location'][1], data['current_location'][0]]));
+      if(!data || data['is_live']==false){
+        console.log(tracking_id+" doesn't seem to be running");
+        resolve(data);
       }
       else{
-        tracking_markers[tracking_id] = new ol.layer.Vector({
-          source: new ol.source.Vector({
-              features: [
-                  new ol.Feature({
-                      geometry: new ol.geom.Point(ol.proj.fromLonLat([data['current_location'][1], data['current_location'][0]]))
-                  })
-              ]
-          })         
-        });
-        map.addLayer(tracking_markers[tracking_id]);
-        var interaction = set_popup(tracking_markers[tracking_id], tracking_id);
-        map.addInteraction(interaction);
+        tracking_info[tracking_id]=data;
+        if(tracking_id in tracking_markers){
+          tracking_markers[tracking_id].setGeometry(new ol.geom.Point([data['current_location'][1], data['current_location'][0]]));
+        }
+        else{
+          tracking_markers[tracking_id] = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [
+                    new ol.Feature({
+                        geometry: new ol.geom.Point(ol.proj.fromLonLat([data['current_location'][1], data['current_location'][0]]))
+                    })
+                ]
+            })         
+          });
+          map.addLayer(tracking_markers[tracking_id]);
+          var interaction = set_popup(tracking_markers[tracking_id], tracking_id);
+          map.addInteraction(interaction);
+        }
+        resolve(tracking_info[tracking_id]);
       }
-      resolve(tracking_info[tracking_id]);
     });
   });
 }
+  
 
 function set_popup(marker, tracking_id){
   return new ol.interaction.Select(
