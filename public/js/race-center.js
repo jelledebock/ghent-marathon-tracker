@@ -1,6 +1,11 @@
 var is_live = false;
 var map;
 
+var parcours;
+var tracking_markers = {};
+
+var gpx_source;
+
 var tracking_ids = [];
 var tracking_info = {};
 
@@ -37,8 +42,56 @@ function get_location_stats(tracking_id){
   return new Promise(function(resolve, reject){
     $.get('/last_info/'+tracking_id, function(data){
       tracking_info[tracking_id]=data;
+      if(tracking_id in tracking_markers){
+        tracking_markers[tracking_id].setGeometry(new ol.geom.Point([data['current_location'][1], data['current_location'][0]]));
+      }
+      else{
+        tracking_markers[tracking_id] = new ol.layer.Vector({
+          source: new ol.source.Vector({
+              features: [
+                  new ol.Feature({
+                      geometry: new ol.geom.Point(ol.proj.fromLonLat([data['current_location'][1], data['current_location'][0]]))
+                  })
+              ]
+          })         
+        });
+        map.addLayer(tracking_markers[tracking_id]);
+        var interaction = set_popup(tracking_markers[tracking_id], tracking_id);
+        map.addInteraction(interaction);
+      }
       resolve(tracking_info[tracking_id]);
     });
+  });
+}
+
+function set_popup(marker, tracking_id){
+  return new ol.interaction.Select(
+    marker, {
+      hover: true,
+      onBeforeSelect: function(feature) {
+         // add code to create tooltip/popup
+         popup = new ol.popup.FramedCloud(
+            "",
+            feature.geometry.getBounds().getCenterLonLat(),
+            new OpenLayers.Size(100,100),
+            "<div>"+tracking_id+"</div>",
+            null,
+            true,
+            null);
+  
+         feature.popup = popup;
+  
+         map.addPopup(popup);
+         // return false to disable selection and redraw
+         // or return true for default behaviour
+         return true;
+      },
+      onUnselect: function(feature) {
+         // remove tooltip
+         map.removePopup(feature.popup);
+         feature.popup.destroy();
+         feature.popup=null;
+      }
   });
 }
 
@@ -69,6 +122,24 @@ function init_map(){
           zoom: 4
         })
       });
+    gpx_source = new ol.source.Vector({
+      url: 'data/parcours.gpx',
+      format: new ol.format.GPX()
+    });
+    parcours = new ol.layer.Vector({
+      source: gpx_source,
+      style: function(feature) {
+        return style[feature.getGeometry().getType()];
+      }
+    });
+    map.addLayer(parcours);
+    gpx_source.once('change',function(e){
+      if(gpx_source.getState() === 'ready') {
+        var extent = gpx_source.getExtent();
+        console.log(extent);
+        map.getView().fit(extent, map.getSize());
+    }
+    });
 };
 
 $(document).ready(async function(){
@@ -81,3 +152,30 @@ $(document).ready(async function(){
     setInterval(update_race_data, UPDATE_INTERVAL*1000);
     init_map();
 })
+
+var style = {
+  'Point': new ol.style.Style({
+    image: new ol.style.Circle({
+      fill: new ol.style.Fill({
+        color: 'rgba(255,255,0,0.4)'
+      }),
+      radius: 5,
+      stroke: new ol.style.Stroke({
+        color: '#ff0',
+        width: 1
+      })
+    })
+  }),
+  'LineString': new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#00008b',
+      width: 3
+    })
+  }),
+  'MultiLineString': new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#00008b',
+      width: 3
+    })
+  })
+};

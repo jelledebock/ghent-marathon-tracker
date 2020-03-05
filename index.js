@@ -11,7 +11,7 @@ var moment = require('moment');
 
 var port = process.env.PORT || 3000;
 var app = express();
-var race_api = new race_center.FirebaseRaceCenter();
+var race_api = new race_center.FirebaseRaceCenter(mqtt);
 
 var user;
 
@@ -40,17 +40,12 @@ app.get('/update_status/:status', authController.checkIfAdmin, async function(re
   return res.json(updated_obj);
 })
 
-app.get('/last_info/:tracking_id', async function(req, res){
+app.get('/last_info/:tracking_id', function(req, res){
   var tracking_id = req.params.tracking_id;
 
   console.log("Getting stats of "+tracking_id);
-  if(tracking_id in race_api.current_status){
-    json_obj = race_api.current_status[tracking_id];
-    return res.json(json_obj);
-  }
-  else{
-    return {};
-  }
+  json_obj = race_api.getStatus(tracking_id);
+  return res.json(json_obj);
 });
 
 app.get('/tracking_ids', async function(req, res){
