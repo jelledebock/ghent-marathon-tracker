@@ -187,5 +187,5 @@ function create_or_update_marker(tracking_id, data, real_name){
 
     map.addLayer(new ol.layer.Vector({source: tracking_markers[tracking_id]}));
 
-    resolve(tracking_info[tracking_id]);
+    return tracking_info[tracking_id];
 }

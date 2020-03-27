@@ -68,7 +68,7 @@ div.race-status-bar>div{
 
 
 .athlete-name{
-    font-size: medium;
+    font-size: xx-large;
     font-weight: bold;
     line-height: 2;
 }
@@ -76,7 +76,6 @@ div.race-status-bar>div{
 div.athlete-data-row{
     margin: auto;
     width: 100%;
-    height: 20px;
 }
 
 nav.navbar-idlab{

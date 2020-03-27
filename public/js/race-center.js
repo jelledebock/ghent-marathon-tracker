@@ -66,7 +66,8 @@ function get_location_stats(tracking_id, real_name){
         resolve(data);
       }
       else{
-        resolve(create_or_update_marker(tracking_id, data, real_name));
+        create_or_update_marker(tracking_id, data, real_name);
+        resolve(data);
       }
     });
   });
