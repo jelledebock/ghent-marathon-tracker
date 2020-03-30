@@ -4,6 +4,7 @@ var admin = require('../lib/authentication.js');
 module.exports.checkIfAuthenticated = async (req, res, next) => {
     try {
         const userInfo = await admin.auth().currentUser;
+        req.user = userInfo;
         if(userInfo) 
             return next();
         else{
@@ -24,9 +25,14 @@ module.exports.logOut = async () => {
 
 module.exports.user_object = async () =>{
     var user = await admin.auth().currentUser;
-    var admin_info = await admin.auth().currentUser.getIdTokenResult()
-    user.is_admin = admin_info.claims.admin;
-    return user;
+    if(user){
+        var admin_info = await user.getIdTokenResult();
+        user.is_admin = admin_info.claims.admin;
+        return user;
+    }
+    else{
+        return null;
+    }
 }
 module.exports.loginUser = async (email, password) => {
     return admin.auth().signInWithEmailAndPassword(email, password);
@@ -36,9 +42,14 @@ module.exports.loggedInUser = async () =>{
     if(admin.auth().currentUser){
         console.log("User logged in!");
         var user = admin.auth().currentUser.getIdToken();
-        var is_admin = await (admin.auth().currentUser.getIdTokenResult()).claims.admin;
-        user.is_admin = is_admin;
-        return user;
+        if(user){
+            var is_admin = await (admin.auth().currentUser.getIdTokenResult()).claims.admin;
+            user.is_admin = is_admin;
+            return user;
+        }
+        else{
+            return null;
+        }
     }
     else{
         return null;
@@ -47,7 +58,7 @@ module.exports.loggedInUser = async () =>{
 module.exports.checkIfAdmin = async (req, res, next) => {
     try{
         const user_token = await admin.auth().currentUser.getIdTokenResult();
-        console.log(user_token.claims.admin);
+        //console.log(user_token.claims.admin);
         if (user_token.claims.admin) {
             return next();
         }

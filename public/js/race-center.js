@@ -15,10 +15,13 @@ var tracking_info = {};
 var LAST_X_SECONDS_DATA = 60;
 var UPDATE_INTERVAL = 60;
 
-//Checks on the server whether the race is going on
-// Node.js server listens on /race_status
-//  - The status is cached on the node.js server and is refreshed every 2 minutes
-//  - UI --> shows live/not live
+/**
+ * Checks on the server whether the race is going on
+ * Node.js server listens on /race_status
+ *  - The status is cached on the node.js server and is refreshed every 2 minutes
+ *  - UI --> shows live/not live
+ * @returns Promise containing the nodejs servers status (live/not live)
+*/
 function get_live_status(){
   return new Promise(function(resolve, reject){
       $.get('/race_status', function(data){
