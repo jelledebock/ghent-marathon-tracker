@@ -69,21 +69,21 @@ var style = {
 
   function get_icon(tracking_id){
     if(tracking_id=='abdi'){
-      _colour=' #FF0000';
+      img_src='/data/abdi-face.png';
     }
     else if(tracking_id=='first_runner'){
-      _colour=' #0000FF';
+      img_src='/data/first-runner.png';
     }
     else{
-      _colour=' #008000';
+      img_src='/data/runner.svg';
     }
     var iconStyle = new ol.style.Style({
       image: new ol.style.Icon({
-        colour: _colour,
         anchorXUnits: 'fraction',
         anchorYUnits: 'pixels',
-        src: 'data/runner.svg',
-        scale: 1.1
+        anchorOrigin: 'bottom-right',
+        src: img_src,
+        scale: 1.0
       })
     });
     return iconStyle;
@@ -178,7 +178,7 @@ function create_or_update_marker(tracking_id, data, real_name){
     else{
       tracking_markers[tracking_id] = new ol.source.Vector({features:[new ol.Feature({
                     geometry: new ol.geom.Point(ol.proj.fromLonLat([data['current_location'][1], data['current_location'][0]])),
-                    name: 'Location of '+real_name,
+                    name: 'Locatie van:'+real_name,
                     id: tracking_id
       })]});
       tracking_markers[tracking_id].getFeatures()[0].setStyle(get_icon(tracking_id));

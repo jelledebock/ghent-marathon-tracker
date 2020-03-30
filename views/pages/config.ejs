@@ -18,10 +18,19 @@
         <h5>Live status</h5>
         <div id='live-status-json-viewer' class="json-editor"></div>
         <a class='btn btn-success' id="update-config">Update live status</a>
+        <a class='btn btn-success' id="update-time">Update start time (now)</a>
+        <a class='btn btn-success' id="reset-race">Reset race (start from 0)</a>
+
         <script> 
                 var config_data;
 
                 function update_var(data){
+                    var stringValue = data['is_live'];
+                    data['is_live']=(stringValue || stringValue === "true" || stringValue ===1);
+                    
+                    console.log("Updated vars")
+                    console.log(data);
+
                     config_data = data;
                 }
 
@@ -42,11 +51,26 @@
                 
                 $('#update-config').click(function(){
                         console.log("Clicked on config update");
-                        var live_status = config_data['is_live'];
-                        console.log("Updating live status to "+JSON.stringify(live_status));
-                        $.get('/update_status/'+JSON.stringify(live_status), function(data){
+                        console.log("Updating live status to "+JSON.stringify(config_data));
+                        $.post('/update_status', config_data, function(data){
                             editor = $('#live-status-json-viewer').jsonEditor(config_data, opts);
                             console.log("Updated successfully!");
+                        });
+                });    
+
+                $('#update-time').click(function(){
+                        console.log("Clicked on config update");
+                        console.log("Updating live status to "+JSON.stringify(config_data));
+                        $.get('/set_start_time_now', function(data){
+                            editor = $('#live-status-json-viewer').jsonEditor(config_data, opts);
+                            console.log("Updated successfully!");
+                        });
+                });
+
+                $('#reset-race').click(function(){
+                        console.log("Clicked on reset race");
+                        $.get('/reset_race', function(data){
+                            console.log(data['message']);
                         });
                 });
 

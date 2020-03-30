@@ -32,12 +32,29 @@ app.get('/race_status', async function(req, res){
   return res.json(race_api.race_status);
 });
 
-app.get('/update_status/:status', authController.checkIfAdmin, async function(req, res){
-  var status = JSON.parse(req.params.status);
+app.post('/update_status', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async function(req, res){
+  var status = req.body;
+  const millisec = status.event_started_at._seconds * 1e3 ;
+  status.event_started_at = new Date(millisec);
+  status.is_live = (status.is_live === "true");
+  for(var i=0; i<status.start_delay_seconds.length; i++){
+    status.start_delay_seconds[i] = parseInt(status.start_delay_seconds[i]);
+  }
   console.log("Updating status to ",status);
   var updated_obj = await race_api.setLiveStatus(status);
+  race_api.reload_config();
+
   return res.json(updated_obj);
 })
+
+app.get('/set_start_time_now', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async function(req, res){
+  var status = await race_api.getPlatformStatus();
+  console.log(status);
+  status.event_started_at = new Date();
+  var updated_obj = await race_api.setLiveStatus(status);
+  race_api.reload_config();
+  return res.json(updated_obj);
+});
 
 app.get('/last_info/:tracking_id', function(req, res){
   var tracking_id = req.params.tracking_id;
@@ -119,6 +136,11 @@ app.post('/config', bodyParser.urlencoded({extended: true}), authController.chec
   mqtt.initialize();
   gpx.intialize();
   res.json(config_data);
+});
+
+app.get('/reset_race', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async (req, res) => {
+  race_api.resetRace();
+  res.json({"message": "Race center status resetted!"});
 });
 
 app.get('/delete_db_last_day', bodyParser.urlencoded({extended: true}), authController.checkIfAdmin, async (req, res) => {
