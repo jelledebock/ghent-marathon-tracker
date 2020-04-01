@@ -4,7 +4,7 @@ var config = require('./config');
 var authController = require('./controllers/auth-controller');
 var mqtt = require('./lib/mqtt');
 var bodyParser = require('body-parser')
-var cookieParser = require('cookie-parser')();
+var cookieParser = require('cookie-parser');
 var race_center = require('./lib/race-analytics')
 var moment = require('moment');
 
@@ -14,14 +14,17 @@ var race_api = new race_center.FirebaseRaceCenter(mqtt);
 
 app.use(express.static('public'))
 app.set('view engine', 'ejs');
-app.use(cookieParser);
+app.use(cookieParser());
+
 app.use(async function(req, res, next) {
   // Grap render
   var _render = res.render;
   res.render = async function(view, options, cb) {
-    var cur_user = await authController.user_object();
-    if(cur_user)
+    var cur_user = await authController.user_object(req);
+    if(cur_user){
       options.user = cur_user;
+      req.user = cur_user;
+    }
     else
       options.user = null;
     // Original call
@@ -110,18 +113,17 @@ app.get('/real_names', async function(req, res){
  * 
  * @returns JSON (redirects to the profile page if user authenticated)
  */
-app.post('/login', bodyParser.urlencoded({extended: true}), function (req, res) {
+app.post('/login', bodyParser.urlencoded({extended: true}), async function (req, res) {
   var response = {
       username: req.body.username,
       password: req.body.password
 
   };
-  authController.loginUser(response.username, response.password).then(function(){
-    authController.user_object().then(function(user_obj){
-      req.user = user_obj;
-      res.redirect('/user');
-    })
-  });  
+  var sessionCookie = await authController.loginUser(response.username, response.password);
+  const expiresIn =  7 * 24 * 3600 * 1000; // one week
+  const options = {maxAge: expiresIn, httpOnly: true, saveUninitialized: true, resave: true};
+  res.cookie('session', sessionCookie, options);
+  res.redirect('/user');
 });
 
 /**
@@ -132,13 +134,7 @@ app.post('/login', bodyParser.urlencoded({extended: true}), function (req, res) 
  * @returns JSON (redirects to the profile page if user authenticated)
  */
 app.get('/logout', authController.checkIfAuthenticated, function(req, res){
-  authController.logOut().then(function(){
-    authController.logOut();
-    req.user = null;
-    var current_location = mqtt.current_location;
-    var parcours = gpx.parcours;
-    res.render('pages/home', { title: 'Halve marathon 2 Tokyo', location: current_location, parcours: parcours });
-  })
+  authController.logOut(req,res);
 });
 
 /**
@@ -148,9 +144,8 @@ app.get('/logout', authController.checkIfAuthenticated, function(req, res){
  * 
  * @returns HTML (renders the profile page)
  */
-app.get('/user', authController.checkIfAuthenticated, function(req, res){
-  var user = req.user;
-  //console.log(req.user);
+app.get('/user', authController.checkIfAuthenticated, async function(req, res){
+  var user = await authController.user_object(req);
   res.render('pages/profile', {title: 'Userinfo of '+user.email});
 });
 
